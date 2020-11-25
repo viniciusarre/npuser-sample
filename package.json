@@ -13,8 +13,8 @@
     "watch": "webpack --watch --mode=development",
     "build": "webpack --mode=development",
     "build:run": "npm run build && npm run run",
-    "run": "cp .dev.env .env && node dist/main.js",
-    "run:prod": "cp .prod.env .env && npm run build && node dist/main.js"
+    "sample": "cp .dev.env .env && node dist/main.js",
+    "prod": "cp .prod.env .env && npm run build && node dist/main.js"
   },
   "dependencies": {
     "dotenv": "^8.2.0",

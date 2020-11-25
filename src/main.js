@@ -1,5 +1,5 @@
-import NoPasswordAuthorizer from 'npuser-client'
-// import NoPasswordAuthorizer from '../../dist'
+// import NoPasswordAuthorizer from 'npuser-client'
+import NoPasswordAuthorizer from '../../npuser-client/dist'
 import readline from 'readline'
 import config from './config-env'
 console.log('the env contains', config)
@@ -10,7 +10,7 @@ async function getCodeFromUser () {
     output: process.stdout
   })
   return new Promise(resolve => {
-    rl.question('What is the verification code  ? ', function (code) {
+    rl.question('What is the verification code? (Ctrl-C or enter nothing to stop) ', function (code) {
       rl.close()
       resolve(code)
     })
@@ -22,7 +22,7 @@ async function main () {
     baseUrl: config.NPUSER_URL,
     clientId: config.CLIENT_ID,
     sharedSecretKey: config.SECRET,
-    silent: false,
+    silent: true,
     dev: config.DEV === 'true'
   })
 
@@ -32,10 +32,12 @@ async function main () {
   const authResponse = await np.sendAuth(emailAddress)
   console.log('Auth response:', authResponse)
 
-  const code = await getCodeFromUser()
-
-  const validationResponse = await np.sendValidation(emailAddress, authResponse.token, code)
-  console.log('Validation response:', validationResponse)
+  let code = await getCodeFromUser()
+  while (code) {
+    const validationResponse = await np.sendValidation(emailAddress, authResponse.token, code)
+    console.log('Validation response:', validationResponse)
+    code = await getCodeFromUser()
+  }
 }
 
 main()
