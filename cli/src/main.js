@@ -1,5 +1,5 @@
-// import NoPasswordAuthorizer from 'npuser-client'
-import NoPasswordAuthorizer from '../../npuser-client/dist'
+import NoPasswordAuthorizer from 'npuser-client'
+// import NoPasswordAuthorizer from '../../npuser-client/dist'
 import readline from 'readline'
 import config from './config-env'
 console.log('the env contains', config)
