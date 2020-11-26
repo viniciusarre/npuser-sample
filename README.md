@@ -94,3 +94,71 @@ Adjust the scripts in the package.json file.
     "run": "node dist/main.js"
   },
 ```
+
+
+## How I created the sample client
+
+```
+npm install @vue/cli --save-dev
+npm install @vue/cli-init --save-dev
+node node_modules/@vue/cli/bin/vue.js init webpack npuser-client
+```
+
+Tested the created project with ```npm start``` which runs the local web server on ```http://localhost:8080```.
+And with ```npm run build``` which builds the static project.  Unfortunately the build also generates
+tens of warnings about circular dependencies.  Will need to see if these stay around and how to fix them.
+
+For this project I also want pug, sass and the npuser icon.
+```
+npm install -D sass-loader node-sass
+```
+
+```
+Vue CLI v4.5.9
+? Please pick a preset: Manually select features
+? Check the features needed for your project:
+ ◉ Choose Vue version
+ ◉ Babel
+ ◉ TypeScript
+ ◉ Progressive Web App (PWA) Support
+❯◉ Router
+ ◉ Vuex
+ ◉ CSS Pre-processors
+ ◉ Linter / Formatter
+ ◉ Unit Testing
+ ◉ E2E Testing
+
+
+Vue CLI v4.5.9
+? Please pick a preset: Manually select features
+? Check the features needed for your project: Choose Vue version, Babel, TS, PWA, Router, Vuex, CSS Pre-processors, Linter, Unit, E2E
+? Choose a version of Vue.js that you want to start the project with 3.x (Preview)
+? Use class-style component syntax? No
+? Use Babel alongside TypeScript (required for modern mode, auto-detected polyfills, transpiling JSX)? Yes
+? Use history mode for router? (Requires proper server setup for index fallback in production) Yes
+? Pick a CSS pre-processor (PostCSS, Autoprefixer and CSS Modules are supported by default): Sass/SCSS (with node-sass)
+? Pick a linter / formatter config: Standard
+? Pick additional lint features: Lint on save
+? Pick a unit testing solution: Jest
+? Pick an E2E testing solution: Cypress
+? Where do you prefer placing config for Babel, ESLint, etc.? In dedicated config files
+? Save this as a preset for future projects? (y/N)
+
+
+
+
+```
+
+```
+## get the npuser icon...
+cd npuser-sample-client/public
+cp ../../../npuser/client/public/favicon.ico .
+
+## remove all the Vue icon files
+cd img/icons
+rm *
+```
+
+```
+npm run serve -- --port 8081
+```
