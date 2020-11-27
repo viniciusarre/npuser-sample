@@ -1,11 +1,28 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import Home from '../views/Home.vue'
+import Home from '@/views/Home.vue'
+import Auth from '@/views/Auth.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Home',
     component: Home
+  },
+  {
+    path: '/auth',
+    name: 'auth',
+    component: Auth,
+    meta: {
+      guest: true
+    }
+  },
+  {
+    path: '/dashboard',
+    name: 'userDash',
+    component: () => import(/* webpackChunkName: "about" */ '../views/UserDash.vue'),
+    meta: {
+      requiresAuth: true
+    }
   },
   {
     path: '/about',
