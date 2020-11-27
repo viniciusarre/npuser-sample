@@ -98,21 +98,20 @@ Adjust the scripts in the package.json file.
 
 ## How I created the sample client
 
+In the root folder, locally install the Vue CLI.  I prefer to locally install this tool whenever I need it so that I can
+get the latest version without affecting any other projects.
 ```
 npm install @vue/cli --save-dev
 npm install @vue/cli-init --save-dev
-node node_modules/@vue/cli/bin/vue.js init webpack npuser-client
 ```
 
-Tested the created project with ```npm start``` which runs the local web server on ```http://localhost:8080```.
-And with ```npm run build``` which builds the static project.  Unfortunately the build also generates
-tens of warnings about circular dependencies.  Will need to see if these stay around and how to fix them.
+Then to run the local Vue CLI you need to reach into the node_modules directories.
 
-For this project I also want pug, sass and the npuser icon.
 ```
-npm install -D sass-loader node-sass
+node ../node_modules/@vue/cli/bin/vue.js create npuser-sample-client
 ```
 
+For this sample I made the following choices.  None of these are needed for your application.
 ```
 Vue CLI v4.5.9
 ? Please pick a preset: Manually select features
@@ -128,7 +127,6 @@ Vue CLI v4.5.9
  ◉ Unit Testing
  ◉ E2E Testing
 
-
 Vue CLI v4.5.9
 ? Please pick a preset: Manually select features
 ? Check the features needed for your project: Choose Vue version, Babel, TS, PWA, Router, Vuex, CSS Pre-processors, Linter, Unit, E2E
@@ -143,12 +141,9 @@ Vue CLI v4.5.9
 ? Pick an E2E testing solution: Cypress
 ? Where do you prefer placing config for Babel, ESLint, etc.? In dedicated config files
 ? Save this as a preset for future projects? (y/N)
-
-
-
-
 ```
 
+Next remove Vue icons and insert icon for my application
 ```
 ## get the npuser icon...
 cd npuser-sample-client/public
@@ -159,6 +154,26 @@ cd img/icons
 rm *
 ```
 
+I then removed the boilerplate Vue code in
+```
+public/index.html
+src/components/HelloWorld.vue
+src/views/Home.vue
+```
+
+Run the client with the vue web server and verify all is OK
 ```
 npm run serve -- --port 8081
 ```
+
+I like to use Pug instead of HTML
+```
+node ../node_modules/@vue/cli/bin/vue.js add pug
+```
+
+Next, let's add pages and components and routing that will require authentication, once we've set up the basic pages.
+For this step I went looking for a sample so I can do what we often do, copy and paste existing code. I like the tutorials
+that Digital Ocean provides and used this one for this sample. Starting at Step 3
+
+https://www.digitalocean.com/community/tutorials/how-to-set-up-vue-js-authentication-and-route-handling-using-vue-router#step-3-%E2%80%94-updating-the-vue-router-file
+

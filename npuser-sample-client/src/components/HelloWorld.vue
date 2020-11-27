@@ -1,10 +1,8 @@
-<template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      This is a sample web application that will demonstrate how a client application will use npuser
-    </p>
-  </div>
+<template lang="pug">
+div(class="hello")
+  h1 {{ msg }}
+  p.
+    This is a sample web application that will demonstrate how a client application will use npuser
 </template>
 
 <script lang="ts">
