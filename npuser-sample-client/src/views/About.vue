@@ -1,5 +1,6 @@
-<template>
-  <div class="about">
-    <h1>This is an about page</h1>
-  </div>
+<template lang="pug">
+div(class="about")
+  h1 About NP User Sample Client
+  p.
+    TO DO ..... describe how to get help etc
 </template>

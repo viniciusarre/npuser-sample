@@ -1,18 +1,13 @@
-<template>
-  <div class="home">
-    <img alt="NPUser logo" src="../assets/npauth-icon.png">
-    <HelloWorld msg="Welcome to the sample NPUser client application"/>
-  </div>
+<template lang="pug">
+div(class="home")
+  h1 NP User Sample Client
+  p Welcome to the sample NP User client application
+  p This is a sample web application that will demonstrate how a client application will use npuser
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import HelloWorld from '@/components/HelloWorld.vue' // @ is an alias to /src
 
 export default defineComponent({
-  name: 'Home',
-  components: {
-    HelloWorld
-  }
 })
 </script>

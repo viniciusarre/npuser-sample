@@ -1,8 +1,11 @@
 <template lang="pug">
 div
-  div(v-if="isPendingUserEmail")
+  div(class="column is-one-third")
+    label(for="familyName") Last name
+    input(class="input", id="familyName", name="familyName")
+  div(v-if="state.isPendingUserEmail")
     login-form-input-email(v-on:email-from-user="authUser($event)")
-  div(v-if="isPendingVerificationCode")
+  div(v-if="state.isPendingVerificationCode")
     div(class="columns")
       div Email sent to: {{ state.email }} Message: {{ state.msg }}
     div(class="columns")
@@ -35,7 +38,7 @@ export default {
       state.email = ''
       state.vcode = ''
       state.consent = false
-      state.isPendingUserEmaile = true
+      state.isPendingUserEmail = true
       state.isPendingVerificationCode = false
     }
 

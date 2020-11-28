@@ -1,32 +1,18 @@
-<template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link> |
-    <router-link to="/auth">Sign in</router-link> |
-    <router-link to="/dashboard">User Dash</router-link>
-  </div>
-  <router-view/>
+<template lang="pug">
+div
+  div(id="app-banner")
+    div(id="nav")
+      router-link(to="/") Home
+      div(class="nav-spacer")
+      router-link(to="/about") About
+      div(class="nav-spacer")
+      router-link(to="/auth") Sign in
+      div(class="nav-spacer")
+      router-link(to="/dashboard") User Dash
+  div(class="page-content")
+    router-view
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
+<style scoped lang="scss">
+  @import './scss/definitions';
 </style>
