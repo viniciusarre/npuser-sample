@@ -39,11 +39,13 @@ body {
     text-align: center;
   }
   .page-content {
-    margin: 1rem;
+    margin: 1rem auto;
+    width: 800px;
   }
   @media all and (max-width: 500px) {
     .page-content {
-      margin: 0.5rem;
+      margin: 1rem;
+      width: 90%;
     }
   }
 }
@@ -58,7 +60,6 @@ body {
   margin: 0;
   padding: 0;
 }
-
 
 #nav {
   width: 90%;

@@ -1,9 +1,9 @@
 <template lang="pug">
-div
-  div(class="container")
-    label(for="email") Emailasdasd
-    input(type="email", v-model="email", id="email", name="email", required, :class="{ invalid: !isValid }")
-  div(class="columns")
+div(class="form-container")
+  div(class="form-group")
+    label(for="email") Email
+    input(type="email", v-model="email", id="email", name="email", :class="{ invalid: !isValid }")
+  div(class="button-group")
     button(v-on:buttonClicked="authUser", title="Submit", :disabled="!isValid") Submit
 </template>
 

@@ -1,12 +1,12 @@
 <template lang="pug">
-div
-  div(class="formGroup")
+div(class="form-container")
+  div(class="form-group")
     label(for="vcode") Verification Code
-    input(type="text", v-model="vcode", id="vcode", name="vcode", required, :class="{ invalid: !isValid }")
-  div(class="formGroup")
+    input(type="text", v-model="vcode", id="vcode", name="vcode", :class="{ invalid: !isValid }")
+  div(class="form-group")
     label(for="vcode") Verifi
-    input(type="text", v-model="vcode", id="vcode2", name="vcode", required, :class="{ invalid: !isValid }")
-  div(class="formGroup")
+    input(type="text", v-model="vcode", id="vcode2", name="vcode", :class="{ invalid: !isValid }")
+  div(class="button-group")
     button(v-on:buttonClicked="verifyUser", title="Submit", :disabled="!canSubmit") Submit
     button(v-on:buttonClicked="$emit('cancel')", title="Cancel") Cancel
 </template>
