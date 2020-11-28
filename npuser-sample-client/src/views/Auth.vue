@@ -1,63 +1,65 @@
 <template lang="pug">
 div
-    label(for="email")
-    input(id="email", type="email", v-model="email", required, autofocus)
-<!--    button(type="submit", @click="handleSubmit")-->
-  div(class="counter")
-  p email isValid {{ isValid }}
-  p NewVal (count + 2): {{ countDouble }}
-  button(@click="inc") Increment
-  button(@click="dec") Decrement
-  p Message: {{ msg }} {{ email }}
-  button(:disabled="readyAuth", @click="changeMessage()") Change Message
+  div(v-if="isPendingUserEmail")
+    login-form-input-email(v-on:email-from-user="authUser($event)")
+  div(v-if="isPendingVerificationCode")
+    div(class="columns")
+      div Email sent to: {{ state.email }} Message: {{ state.msg }}
+    div(class="columns")
+      login-form-input-v-code(v-on:vcode-from-user="verifyUser($event)", v-on:cancel="cancelLogin()")
+    div(class="columns")
+      input(type="checkbox", v-model="state.consent", id="consent", name="consent", required)
+      label(for="consent") Consent text here
 </template>
 
 <script lang="ts">
-import { ref, computed, watch } from 'vue'
+import { reactive, computed } from 'vue'
+import LoginFormInputEmail from '@/components/LoginFormEmail.vue'
+import LoginFormInputVCode from '@/components/LoginFormVCode.vue'
+
 export default {
+  components: {
+    LoginFormInputEmail, LoginFormInputVCode
+  },
   setup () {
-    /* ---------------------------------------------------- */
-    const count = ref(0)
-    const email = ref('')
-    const countDouble = computed(() => count.value * 2)
-    const readyAuth = computed(() => count.value === 0)
-    watch(count, newVal => {
-      console.log('count changed', newVal)
+    const state: any = reactive({
+      isPendingUserEmail: true,
+      isPendingVerificationCode: true,
+      email: '',
+      vcode: '',
+      consent: false,
+      msg: computed(() => 'Email: ' + state.email + '. Code: ' + state.vcode)
     })
 
-    const isValid = computed(() => {
-      /* The goal is to just do a  cursory test to prevent obvious errors. Don't get fancy here... */
-      const re = /^([^\s@]+)@([^\s.@]+)(\.[^\s.@]+)+$/
-      return re.test(String(email.value).toLowerCase())
-    })
+    const cancelLogin = () => {
+      state.email = ''
+      state.vcode = ''
+      state.consent = false
+      state.isPendingUserEmaile = true
+      state.isPendingVerificationCode = false
+    }
 
-    const inc = () => {
-      count.value += 1
+    const authUser = async (email: string) => {
+      console.log('authUser with email', email)
+      // await StoreHelper.submitDemoUserEmail(email)
+      state.email = email
+      state.isPendingUserEmail = false
+      state.isPendingVerificationCode = true
     }
-    const dec = () => {
-      if (count.value !== 0) {
-        count.value -= 1
-      }
+
+    const verifyUser = async (vcode: string) => {
+      console.log('user provided vcode and consented too', vcode)
+      state.vcode = vcode
+      state.isPendingVerificationCode = false
+      // this.createDemo()
     }
-    /* ---------------------------------------------------- */
-    const msg = ref('some text')
-    watch(msg, newVal => {
-      console.log('msg changed', newVal)
-    })
-    const changeMessage = () => {
-      msg.value = 'new Message ' + count.value
-    }
+
     /* ---------------------------------------------------- */
     return {
-      email,
-      count,
-      isValid,
-      inc,
-      dec,
-      countDouble,
-      readyAuth,
-      msg,
-      changeMessage
+      state,
+      cancelLogin,
+      authUser,
+      verifyUser
     }
   }
 }
