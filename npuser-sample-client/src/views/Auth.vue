@@ -25,22 +25,29 @@ div
 </template>
 
 <script lang="ts">
-import { reactive, computed } from 'vue'
+import { reactive } from 'vue'
 import LoginFormInputEmail from '@/components/LoginFormEmail.vue'
 import LoginFormInputVCode from '@/components/LoginFormVCode.vue'
+
+interface AuthState {
+  isPendingUserEmail: boolean;
+  isPendingVerificationCode: boolean;
+  email: string;
+  vcode: string;
+  consent: boolean;
+}
 
 export default {
   components: {
     LoginFormInputEmail, LoginFormInputVCode
   },
   setup () {
-    const state: any = reactive({
+    const state: AuthState = reactive({
       isPendingUserEmail: true,
       isPendingVerificationCode: true,
       email: '',
       vcode: '',
-      consent: false,
-      msg: computed(() => 'Email: ' + state.email + '. Code: ' + state.vcode)
+      consent: false
     })
 
     const cancelLogin = () => {
