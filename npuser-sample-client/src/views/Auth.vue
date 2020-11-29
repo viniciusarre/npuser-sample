@@ -1,7 +1,7 @@
 <template lang="pug">
 div
   div(v-if="state.isPendingUserEmail")
-    login-form-input-email(v-on:email-from-user="authUser($event)")
+    login-form-input-email(v-on:email="authUser($event)")
     p.
       NP user and this sample application consider your personal information to be yours and yours alone.
     p.
@@ -11,7 +11,7 @@ div
     p Please write to us if you have any questions or concerns at <a href="mailto:info@npuser.org">info@npuser.org</a>
     hr
   div(v-if="state.isPendingVerificationCode")
-    login-form-input-v-code(v-on:vcode-from-user="verifyUser($event)", v-on:cancel="cancelLogin()")
+    login-form-input-v-code(v-on:vcode="verifyUser($event)", v-on:cancel="cancelLogin()")
     p.
       NP user and this sample application consider your personal information to be yours and yours alone.
     p.
@@ -25,7 +25,7 @@ div
 </template>
 
 <script lang="ts">
-import { reactive, computed } from 'vue'
+import { reactive } from 'vue'
 import LoginFormInputEmail from '@/components/LoginFormEmail.vue'
 import LoginFormInputVCode from '@/components/LoginFormVCode.vue'
 
@@ -36,17 +36,16 @@ export default {
   setup () {
     const state: any = reactive({
       isPendingUserEmail: true,
-      isPendingVerificationCode: true,
+      isPendingVerificationCode: false,
       email: '',
-      vcode: '',
-      consent: false,
-      msg: computed(() => 'Email: ' + state.email + '. Code: ' + state.vcode)
+      token: '',
+      vcode: ''
     })
 
     const cancelLogin = () => {
       state.email = ''
       state.vcode = ''
-      state.consent = false
+      state.token = ''
       state.isPendingUserEmail = true
       state.isPendingVerificationCode = false
     }
@@ -57,13 +56,19 @@ export default {
       state.email = email
       state.isPendingUserEmail = false
       state.isPendingVerificationCode = true
+
+      const authResponse = await np.sendAuth(state.email)
+      console.log('Auth response:', authResponse)
+      state.token = authResponse.token
     }
 
     const verifyUser = async (vcode: string) => {
       console.log('user provided vcode and consented too', vcode)
       state.vcode = vcode
       state.isPendingVerificationCode = false
-      // this.createDemo()
+
+      const validationResponse = await np.sendValidation(state.email, state.token, state.vcode)
+      console.log('Validation response:', validationResponse)
     }
 
     /* ---------------------------------------------------- */

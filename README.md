@@ -177,3 +177,57 @@ that Digital Ocean provides and used this one for this sample. Starting at Step 
 
 https://www.digitalocean.com/community/tutorials/how-to-set-up-vue-js-authentication-and-route-handling-using-vue-router#step-3-%E2%80%94-updating-the-vue-router-file
 
+## Set up sample server
+
+Your application needs an API service.  For this sample we provide a very basic Node JS Express server that is based on the server
+found in the "How To Set Up Vue.js Authentication and Route Handling Using vue-router" tutorial, mentioned above.
+Because we will use NP User the server code that supports adding new users (your customers) and allowing them to
+login is very simple compared to normal applications.
+
+## The problems with passwords
+
+In the normal flow of user authentication you're new potential customer needs to register on your application.
+This is when your application will lose so many potential customers.  You invested a lot of time and effort
+promoting your application or website. People are coming but are they registering?  Every step between the time
+your new potential customer arrives and when they start to see value from your application is a step that can lose
+a new customer.
+
+The registration process is a jump your new users will need to make before they can see value.  Typically,
+applications ask new users to provide their name, a user id, their email address and a password.
+
+Many users want to use an easy to remember password which is often a weak password.  Weak passwords
+are an attack vector on your server.  To protect your application and your customers your application
+needs to impose rules to get only strong passwords.
+For example, passwords must be of a certain length, contain a mixture of upper and lower case letters,
+contains a mixture of numbers and symbols, etc.
+Some applications go further and add more general rules such as insisting that users not reuse passwords they have used before.
+
+To make matters more complicated, the definitions of a "strong password" changes as
+security experts continue to find ways to counteract the threats from malicious
+hackers.
+
+As well, your user interface ought to guide your new customer as they compose their new password. That means
+every rule imposed on the password field needs to be implemented not only on your server but also in your user interface.
+
+Then you need to consider the privacy issues.  We've all read tragic stories of top tier corporations getting hacked
+and millions of user accounts are stolen along with users passwords that we stored in plain text.
+
+But, we are not done with the problems with passwords.  What happens when your user forgets their password?  Your application
+and your user interface need to help your users recover their password, if they are a real user!  Now, your user interface needs
+a whole new set of web pages, api calls and business logic.  Plus, your application needs API to accept a password reset request.
+
+The first step checks if the user is registered or not.  Question.  If not do you immediately tell the
+user that the user id or email address they entered is a valid user?  Best practice suggests you don't because that helps
+malicious hackers see who has registered with your business. The second step typically involves generating a code
+and sending that to your user via email. Your application needs code to work with your application's email service.
+The process continues and it has many other traps to avoid.  Instead, let's consider using NP User.
+
+Can we sum up this topic and agree it is very challenging to correctly handle password and user registration?
+
+
+## NP User no password authentication
+
+Install the NP User client library on your API server
+```
+ npm install --save npuser-client
+```
