@@ -29,12 +29,20 @@ import { reactive } from 'vue'
 import LoginFormInputEmail from '@/components/LoginFormEmail.vue'
 import LoginFormInputVCode from '@/components/LoginFormVCode.vue'
 
+interface AuthState {
+  isPendingUserEmail: boolean;
+  isPendingVerificationCode: boolean;
+  email: string;
+  vcode: string;
+  consent: boolean;
+}
+
 export default {
   components: {
     LoginFormInputEmail, LoginFormInputVCode
   },
   setup () {
-    const state: any = reactive({
+    const state: AuthState = reactive({
       isPendingUserEmail: true,
       isPendingVerificationCode: false,
       email: '',
