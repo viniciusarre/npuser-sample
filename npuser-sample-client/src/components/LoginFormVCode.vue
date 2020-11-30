@@ -4,7 +4,7 @@ div(class="form-container")
     label(for="vcode") Verification Code
     input(type="text", v-model="vcode", id="vcode", name="vcode", :class="{ invalid: !isValid }")
   div(class="button-group")
-    button(v-on:click="$emit('vcode')", title="Submit", :disabled="!isValid") Submit
+    button(v-on:click="$emit('vcode', vcode)", title="Submit", :disabled="!isValid") Submit
     button(v-on:click="$emit('cancel')", title="Cancel") Cancel
 </template>
 

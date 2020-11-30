@@ -4,7 +4,7 @@ div(class="form-container")
     label(for="email") Email
     input(type="email", v-model="email", id="email", name="email", :class="{ invalid: !isValid }")
   div(class="button-group")
-    button(v-on:click="$emit('email')", title="Submit", :disabled="!isValid") Submit
+    button(v-on:click="$emit('email', email)", title="Submit", :disabled="!isValid") Submit
 </template>
 
 <script>

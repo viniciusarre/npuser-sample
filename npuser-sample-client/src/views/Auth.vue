@@ -21,22 +21,33 @@ div
     p.
       This application will store a token in your browser's local storage (we do not use browser cookies).  As long as you come back to this browser you can access whatever data you place into this sample client application. The server behind this sample client application server only knows you by a unique id created using the what is called a "one way hash". This id protects your private data without storing your email address in the system.
 
-
 </template>
 
 <script lang="ts">
 import { reactive } from 'vue'
 import LoginFormInputEmail from '@/components/LoginFormEmail.vue'
 import LoginFormInputVCode from '@/components/LoginFormVCode.vue'
+import axios from 'axios'
 
 interface AuthState {
   isPendingUserEmail: boolean;
   isPendingVerificationCode: boolean;
   email: string;
-  vcode: string;
-  consent: boolean;
+  token: string;
 }
 
+const URL = 'http://localhost:3000/'
+
+async function postIt (apiUrl: string, payload: object) {
+  const url = URL + apiUrl
+  console.log('PostIt', url)
+  return axios
+    .post(url, payload)
+    .then(response => { return response.data })
+    .catch(error => {
+      console.log(error.message)
+    })
+}
 export default {
   components: {
     LoginFormInputEmail, LoginFormInputVCode
@@ -46,13 +57,11 @@ export default {
       isPendingUserEmail: true,
       isPendingVerificationCode: false,
       email: '',
-      token: '',
-      vcode: ''
+      token: ''
     })
 
     const cancelLogin = () => {
       state.email = ''
-      state.vcode = ''
       state.token = ''
       state.isPendingUserEmail = true
       state.isPendingVerificationCode = false
@@ -60,23 +69,38 @@ export default {
 
     const authUser = async (email: string) => {
       console.log('authUser with email', email)
-      // await StoreHelper.submitDemoUserEmail(email)
       state.email = email
-      state.isPendingUserEmail = false
-      state.isPendingVerificationCode = true
-
-      const authResponse = await np.sendAuth(state.email)
+      const authResponse = await postIt('sendNpUserAuth', {email : state.email })
       console.log('Auth response:', authResponse)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+      // @ts-ignore
       state.token = authResponse.token
+      if (state.token) {
+        state.isPendingUserEmail = false
+        state.isPendingVerificationCode = true
+      }
     }
 
     const verifyUser = async (vcode: string) => {
-      console.log('user provided vcode and consented too', vcode)
-      state.vcode = vcode
-      state.isPendingVerificationCode = false
+      if (vcode) {
+        console.log('user provided vcode and consented too', vcode)
+        const payload = {
+          email: state.email,
+          authToken: state.token,
+          code: vcode
+        }
+        const validationResponse = await postIt('sendNpUserValidation', payload)
+        console.log('Validation response:', validationResponse)
+        if (validationResponse.token) {
+          state.isPendingVerificationCode = false
+          localStorage.setItem('authToken', validationResponse.token)
+        } else {
+          console.log('Validation did not succeed')
+        }
 
-      const validationResponse = await np.sendValidation(state.email, state.token, state.vcode)
-      console.log('Validation response:', validationResponse)
+      } else {
+        console.log('verify user error. vocde not provided')
+      }
     }
 
     /* ---------------------------------------------------- */

@@ -31,13 +31,29 @@ router.get('/', function(req, res) {
 })
 
 /* ****************  NP User Authentication ******************* */
-const NoPasswordAuthorizer = require('npuser-client')
+// const NoPasswordAuthorizer = require('npuser-client')
+const NoPasswordAuthorizer = require('../../npuser-client/dist')
+
+config.NPUSER_URL = 'http://localhost:27001/'
 
 const npuserAuthorizer = new NoPasswordAuthorizer({
   baseUrl: config.NPUSER_URL,
   clientId: config.NPUSER_CLIENT_ID,
   sharedSecretKey: config.NPUSER_CLIENT_SECRET,
+  verbose: false
 })
+
+function sendErr(res, status, message, error) {
+  if(error) {
+    message += ' ' + error.message
+  }
+  console.log('ERROR', status, message)
+  res.status(status).send(message )
+}
+
+function sendResponse(res, payload) {
+  res.status(200).send(payload )
+}
 
 /*
 Here is how you can user CURL to test your application's NP User authentication end points.
@@ -61,19 +77,19 @@ router.post('/sendNpUserAuth', function(req, res) {
   .then( (authResponse) => {
     const token = authResponse.token
     // console.log('Auth response:', authResponse)
-    res.status(200).send({ token: token });
-  }).catch((error) => { return res.status(500).send('Error on the server.'); })
+    sendResponse(res,{ token: token });
+  }).catch((error) => { return sendErr(res,500,'Error on the server.', error); })
 })
 
 // STEP 2 - combine the user email address, authorization token and validation code and finalize the user authorization
 router.post('/sendNpUserValidation', function(req, res) {
   const {email, authToken, code } = req.body
   if (! email || ! authToken || ! code) {
-    return res.status(400).send('Must provide email address, verification code and the authorization token');
+    return sendErr(res,400,'Must provide email address, verification code and the authorization token');
   }
   npuserAuthorizer.sendValidation(email, authToken, code)
   .then( (validationResponse) => {
-    if (validationResponse.token) {
+    if (validationResponse.jwt) {
       /*
       THAT'S IT!  You have either just registered a new user or a previous user has logged back in.
       From here on your application can manage the user account as needed.
@@ -82,14 +98,14 @@ router.post('/sendNpUserValidation', function(req, res) {
       This sample application will also insert a new user record if this is the first time.
       The JWT returned will contain the database id of the user.
        */
-      const validationToken = validationResponse.token
+      const validationToken = validationResponse.jwt
       return sampleApplicationInsertUpdateUser(email, validationToken, res)
     } else {
       // the JWT from NPUser may have expired, the code may be wrong, or otherwise
       console.log('Auth validationResponse validationResponse:', validationResponse)
-      return res.status(400).send('Validation did not succeed.');
+      return sendErr(res,400,'Validation did not succeed.');
     }
-  }).catch((error) => { return res.status(500).send('Error on the server.'); })
+  }).catch((error) => { return sendErr(res,500,'Error on the server.', error); })
 
 })
 
@@ -101,7 +117,7 @@ const EXPIRES = 60 * 60 * 24 * 30
 function sampleApplicationInsertUpdateUser(email, validationToken, res) {
   console.log('Auth insertUpdateUser response:', email, validationToken)
   db.selectByEmail(email, (err, user) => {
-    if (err) return res.status(500).send('Error on the server.');
+    if (err) return sendErr(res,500,'Error on the server.', err);
     if (user) {
       console.log('Auth insertUpdateUser existing user')
       updateUser(user, res)
@@ -111,9 +127,9 @@ function sampleApplicationInsertUpdateUser(email, validationToken, res) {
       console.log('Auth insertUpdateUser NEW user')
       db.insert([email],
         function (err) {
-          if (err) return res.status(500).send("There was a problem registering the user.")
+          if (err) return sendErr(res,500,"There was a problem registering the user.", err)
           db.selectByEmail(email, (err,user) => {
-            if (err) return res.status(500).send("There was a problem getting user")
+            if (err) return sendErr(res,500,"There was a problem getting user", err)
             updateUser(user, res)
           });
         });
@@ -123,9 +139,8 @@ function sampleApplicationInsertUpdateUser(email, validationToken, res) {
 
 function updateUser(user, res) {
   console.log('Auth updateUser user', user)
-  let token = jwt.sign({ id: user.id }, config.secret, {expiresIn: EXPIRES});
-  res.status(200).send({ auth: true, token: token, user: user });
-
+  let token = jwt.sign({ id: user.id }, config.MY_APP_TOKEN_SECRET, {expiresIn: EXPIRES});
+  sendResponse(res,{ auth: true, token: token, user: user });
 }
 
 
