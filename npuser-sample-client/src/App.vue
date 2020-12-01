@@ -1,5 +1,6 @@
 <template lang="pug">
 div
+  ui-spinner
   div(id="app-banner")
     div(id="nav")
       router-link(to="/") Home
@@ -12,7 +13,14 @@ div
   div(class="page-content")
     router-view
 </template>
-
+<script>
+import UiSpinner from './components/UiSpinner.vue'
+export default {
+  components: {
+    UiSpinner
+  }
+}
+</script>
 <style scoped lang="scss">
   @import './scss/definitions';
 </style>

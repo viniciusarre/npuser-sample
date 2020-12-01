@@ -28,6 +28,7 @@ import { reactive } from 'vue'
 import LoginFormInputEmail from '@/components/LoginFormEmail.vue'
 import LoginFormInputVCode from '@/components/LoginFormVCode.vue'
 import axios from 'axios'
+import State from '../state'
 
 interface AuthState {
   isPendingUserEmail: boolean;
@@ -68,38 +69,48 @@ export default {
     }
 
     const authUser = async (email: string) => {
-      console.log('authUser with email', email)
-      state.email = email
-      const authResponse = await postIt('sendNpUserAuth', {email : state.email })
-      console.log('Auth response:', authResponse)
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      // @ts-ignore
-      state.token = authResponse.token
-      if (state.token) {
-        state.isPendingUserEmail = false
-        state.isPendingVerificationCode = true
+      State.setLoading(true)
+      try {
+        console.log('authUser with email', email)
+        state.email = email
+        const authResponse = await postIt('sendNpUserAuth', {email: state.email})
+        console.log('Auth response:', authResponse)
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        state.token = authResponse.token
+        if (state.token) {
+          state.isPendingUserEmail = false
+          state.isPendingVerificationCode = true
+        }
+      } finally {
+        State.setLoading(false)
       }
     }
 
     const verifyUser = async (vcode: string) => {
-      if (vcode) {
-        console.log('user provided vcode and consented too', vcode)
-        const payload = {
-          email: state.email,
-          authToken: state.token,
-          code: vcode
-        }
-        const validationResponse = await postIt('sendNpUserValidation', payload)
-        console.log('Validation response:', validationResponse)
-        if (validationResponse.token) {
-          state.isPendingVerificationCode = false
-          localStorage.setItem('authToken', validationResponse.token)
-        } else {
-          console.log('Validation did not succeed')
-        }
+      State.setLoading(true)
+      try {
+        if (vcode) {
+          console.log('user provided vcode and consented too', vcode)
+          const payload = {
+            email: state.email,
+            authToken: state.token,
+            code: vcode
+          }
+          const validationResponse = await postIt('sendNpUserValidation', payload)
+          console.log('Validation response:', validationResponse)
+          if (validationResponse.token) {
+            state.isPendingVerificationCode = false
+            localStorage.setItem('authToken', validationResponse.token)
+          } else {
+            console.log('Validation did not succeed')
+          }
 
-      } else {
-        console.log('verify user error. vocde not provided')
+        } else {
+          console.log('verify user error. vocde not provided')
+        }
+      } finally {
+        State.setLoading(false)
       }
     }
 
