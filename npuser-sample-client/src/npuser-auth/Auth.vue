@@ -25,8 +25,8 @@ div
 
 <script lang="ts">
 import { reactive } from 'vue'
-import LoginFormInputEmail from '@/components/LoginFormEmail.vue'
-import LoginFormInputVCode from '@/components/LoginFormVCode.vue'
+import LoginFormInputEmail from './LoginFormEmail.vue'
+import LoginFormInputVCode from './LoginFormVCode.vue'
 import axios from 'axios'
 import State from '../state'
 

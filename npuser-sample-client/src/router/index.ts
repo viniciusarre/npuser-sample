@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import Home from '@/views/Home.vue'
-import Auth from '@/views/Auth.vue'
+import Auth from '@/npuser-auth/Auth.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
