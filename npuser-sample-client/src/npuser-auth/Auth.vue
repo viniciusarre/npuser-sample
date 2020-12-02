@@ -91,7 +91,7 @@ export default {
       State.setLoading(true)
       try {
         if (vcode) {
-          console.log('user provided vcode and consented too', vcode)
+          console.log('user provided vcode', vcode)
           const payload = {
             email: state.email,
             authToken: state.token,
@@ -105,9 +105,8 @@ export default {
           } else {
             console.log('Validation did not succeed')
           }
-
         } else {
-          console.log('verify user error. vocde not provided')
+          console.log('verify user error. vcode not provided')
         }
       } finally {
         State.setLoading(false)

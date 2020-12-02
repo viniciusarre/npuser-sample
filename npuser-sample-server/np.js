@@ -27,11 +27,11 @@ function setupNP(config, router, userValidatedResponseHandler) {
   // STEP 1 -- send auth request to NP User.  Extract and return the authorization token.
   router.post(AUTH_END_POINT, function (req, res) {
     const email = req.body.email
-    if (verbose) console.log('Auth request with email:', email)
+    if (verbose) console.log('npuser-sample-server: step 1 request with email:', email)
     npuserAuthorizer.sendAuth(email)
     .then((authResponse) => {
       const token = authResponse.token
-      if (verbose) console.log('Auth response:', authResponse)
+      if (verbose) console.log('npuser-sample-server:  step 1 response:', authResponse)
       sendResponse(res, {token: token});
     }).catch((error) => { return sendErr(res, 500, 'Error on the server.', error); })
   })
@@ -42,11 +42,11 @@ function setupNP(config, router, userValidatedResponseHandler) {
     if (!email || !authToken || !code) {
       return sendErr(res, 400, 'Must provide email address, verification code and the authorization token');
     }
-    if (verbose) console.log('Validation request with:', email, code, authToken)
+    if (verbose) console.log('npuser-sample-server: step 2 request with:', email, code, authToken)
     npuserAuthorizer.sendValidation(email, authToken, code)
     .then((validationResponse) => {
       if (validationResponse.jwt) {
-        if (verbose) console.log('User has been validated by NP User')
+        if (verbose) console.log('npuser-sample-server: User has been validated by NP User')
         /*
         THAT'S IT!  You have either just registered a new user or a previous user has logged back in.
         From here on your application can manage the user account as needed.
@@ -59,8 +59,8 @@ function setupNP(config, router, userValidatedResponseHandler) {
         return userValidatedResponseHandler(email, validationToken, res)
       } else {
         // the JWT from NPUser may have expired, the code may be wrong, or otherwise
-        if (verbose) console.log('Auth validationResponse validationResponse:', validationResponse)
-        return sendErr(res, 400, 'Validation did not succeed.');
+        if (verbose) console.log('npuser-sample-server:  step 2 response:', validationResponse)
+        return sendErr(res, validationResponse.status, validationResponse.message);
       }
     }).catch((error) => { return sendErr(res, 500, 'Error on the server.', error); })
   })
