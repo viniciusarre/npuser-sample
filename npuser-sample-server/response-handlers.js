@@ -3,7 +3,7 @@ function sendErr(res, status, message, error) {
   if(error) {
     message += ' ' + error.message
   }
-  console.log('ERROR', status, message)
+  console.log('npuser-sample-server: ERROR', status, message)
   res.status(status).send(message )
 }
 

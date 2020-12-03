@@ -2,6 +2,7 @@
 div
   div(v-if="state.isPendingUserEmail")
     login-form-input-email(v-on:email="authUser($event)")
+    p(v-if="state.errMsg", class="error-text") {{state.errMsg}}
     p.
       NP user and this sample application consider your personal information to be yours and yours alone.
     p.
@@ -35,6 +36,7 @@ interface AuthState {
   isPendingVerificationCode: boolean;
   email: string;
   token: string;
+  errMsg?: string;
 }
 
 const URL = 'http://localhost:3000/'
@@ -46,7 +48,8 @@ async function postIt (apiUrl: string, payload: object) {
     .post(url, payload)
     .then(response => { return response.data })
     .catch(error => {
-      console.log(error.message)
+      console.log('postIt Rye', error)
+      throw error
     })
 }
 export default {
@@ -58,7 +61,8 @@ export default {
       isPendingUserEmail: true,
       isPendingVerificationCode: false,
       email: '',
-      token: ''
+      token: '',
+      errMsg: undefined
     })
 
     const cancelLogin = () => {
@@ -66,6 +70,7 @@ export default {
       state.token = ''
       state.isPendingUserEmail = true
       state.isPendingVerificationCode = false
+      state.errMsg = undefined
     }
 
     const authUser = async (email: string) => {
@@ -73,15 +78,17 @@ export default {
       try {
         console.log('authUser with email', email)
         state.email = email
-        const authResponse = await postIt('sendNpUserAuth', {email: state.email})
+        // TODO restore email address
+        const authResponse = await postIt('user/auth', {email: undefined})// state.email})
         console.log('Auth response:', authResponse)
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-        // @ts-ignore
         state.token = authResponse.token
         if (state.token) {
           state.isPendingUserEmail = false
           state.isPendingVerificationCode = true
         }
+      } catch (error) {
+        console.log('authUser Rye', error)
+        state.errMsg = error.message
       } finally {
         State.setLoading(false)
       }
@@ -97,7 +104,7 @@ export default {
             authToken: state.token,
             code: vcode
           }
-          const validationResponse = await postIt('sendNpUserValidation', payload)
+          const validationResponse = await postIt('user/validate', payload)
           console.log('Validation response:', validationResponse)
           if (validationResponse.token) {
             state.isPendingVerificationCode = false

@@ -8,10 +8,6 @@ const {sendErr, sendResponse} = require('./response-handlers')
 const EXPIRES = 60 * 60 * 24 * 30
 let TOKEN_SECRET
 
-function setupApp(config) {
-  TOKEN_SECRET = config.MY_APP_TOKEN_SECRET
-}
-
 let database
 function getDb() {
   if (!database)
@@ -19,7 +15,7 @@ function getDb() {
   return database
 }
 
-function sampleApplicationInsertUpdateUser(email, validationToken, res) {
+export function sampleApplicationInsertUpdateUser(email, validationToken, res) {
   console.log('Auth insertUpdateUser response:', email, validationToken)
   let db = getDb()
   db.selectByEmail(email, (err, user) => {
@@ -43,10 +39,12 @@ function sampleApplicationInsertUpdateUser(email, validationToken, res) {
   });
 }
 
-function updateUser(user, res) {
+export function updateUser(user, res) {
+  TOKEN_SECRET = config.MY_APP_TOKEN_SECRET
   console.log('Auth updateUser user', user)
   let token = jwt.sign({ id: user.id }, TOKEN_SECRET, {expiresIn: EXPIRES});
   sendResponse(res,{ auth: true, token: token, user: user });
 }
 
-module.exports = {setupApp, sampleApplicationInsertUpdateUser}
+// module.exports = {setupApp, sampleApplicationInsertUpdateUser}
+
