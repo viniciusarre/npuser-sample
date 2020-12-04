@@ -1,8 +1,11 @@
+import {
+  Request, Response, NextFunction
+} from 'express'
 // const NoPasswordAuthorizer = require('npuser-client')
-const NoPasswordAuthorizer = require('../../npuser-client/dist')
-const {sendErr, sendResponse} = require('./response-handlers')
+import NoPasswordAuthorizer, { AuthResponse, ValidationResponse } from '../../../npuser-client/dist'
+const { sendResponse } = require('./response-handlers')
 const { Router } = require('express')
-const { BadRequest, InvalidRequest } = require('./application-error')
+const { BadRequest, InvalidRequest } = require('./errors/application-error')
 const verbose = true
 
 const { NPUSER_CLIENT_ID } = process.env // the api key this app uses to connect with the npuser.org service
@@ -17,7 +20,6 @@ const npuserAuthorizer = new NoPasswordAuthorizer({
 })
 
 class SampleNpUserAuthorizer /* implements ApiProvider */ {
-
   /**
    *
    * @param userValidatedResponseHandler function (email, validationToken, res)
@@ -27,30 +29,30 @@ class SampleNpUserAuthorizer /* implements ApiProvider */ {
   }
 
   userAuth () {
-    return (req, res, next) => {
+    return (req: Request, res: Response) => {
       const email = req.body.email
       if (verbose) console.log('npuser-sample-server: step 1 request with email:', email)
       npuserAuthorizer.sendAuth(email)
-      .then((authResponse) => {
-        const token = authResponse.token
-        if (verbose) console.log('npuser-sample-server:  step 1 response:', authResponse)
-        sendResponse(res, {token: token});
-      })
+        .then((authResponse: AuthResponse) => {
+          const token = authResponse.token
+          if (verbose) console.log('npuser-sample-server:  step 1 response:', authResponse)
+          sendResponse(res, { token: token })
+        })
     }
   }
 
   userValidate (userValidatedResponseHandler) {
-    return (req, res) => {
-      const {email, authToken, code} = req.body
+    return (req: Request, res: Response) => {
+      const { email, authToken, code } = req.body
       if (!email || !authToken || !code) {
         throw BadRequest('Must provide email address, verification code and the authorization token')
       }
       if (verbose) console.log('npuser-sample-server: step 2 request with:', email, code, authToken)
       return npuserAuthorizer.sendValidation(email, authToken, code)
-      .then((validationResponse) => {
-        if (validationResponse.jwt) {
-          if (verbose) console.log('npuser-sample-server: User has been validated by NP User')
-          /*
+        .then((validationResponse: ValidationResponse) => {
+          if (validationResponse.jwt) {
+            if (verbose) console.log('npuser-sample-server: User has been validated by NP User')
+            /*
           THAT'S IT!  You have either just registered a new user or a previous user has logged back in.
           From here on your application can manage the user account as needed.
           For this simple sample we will return a JWT signed by this application.
@@ -58,15 +60,15 @@ class SampleNpUserAuthorizer /* implements ApiProvider */ {
           This sample application will also insert a new user record if this is the first time.
           The JWT returned will contain the database id of the user.
            */
-          if (userValidatedResponseHandler) {
-            const validationToken = validationResponse.jwt
-            return userValidatedResponseHandler(email, validationToken, res)
+            if (userValidatedResponseHandler) {
+              const validationToken = validationResponse.jwt
+              return userValidatedResponseHandler(email, validationToken, res)
+            }
+          } else {
+            if (verbose) console.log('npuser-sample-server:  step 2 response:', validationResponse)
+            throw InvalidRequest(validationResponse.message)
           }
-        } else {
-          if (verbose) console.log('npuser-sample-server:  step 2 response:', validationResponse)
-          throw InvalidRequest(validationResponse.message)
-        }
-      })
+        })
     }
   }
 
@@ -86,7 +88,7 @@ class SampleNpUserAuthorizer /* implements ApiProvider */ {
   }
 }
 
-function wrapAsync (fn/*: express.RequestHandler*/) {
+function wrapAsync (fn/*: express.RequestHandler */) {
   // return function (req: Request, res: Response, next: NextFunction) {
   return function (req, res, next) {
     // `.catch()` any errors and pass them along to the `next()`

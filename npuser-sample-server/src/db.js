@@ -1,37 +1,37 @@
-"use strict";
-const sqlite3 = require('sqlite3').verbose();
+
+const sqlite3 = require('sqlite3').verbose()
 
 class Db {
-  constructor(file) {
-    this.db = new sqlite3.Database(file);
+  constructor (file) {
+    this.db = new sqlite3.Database(file)
     this.createTable()
   }
 
-  createTable() {
+  createTable () {
     const sql = `
       CREATE TABLE IF NOT EXISTS user (
           id integer PRIMARY KEY,
           email text UNIQUE,
           appData text
        )`
-    return this.db.run(sql);
+    return this.db.run(sql)
   }
 
-  selectByEmail(email, callback) {
+  selectByEmail (email, callback) {
     return this.db.get(
-      `SELECT * FROM user WHERE email = ?`,
-      [email],function(err,row){
-        callback(err,row)
+      'SELECT * FROM user WHERE email = ?',
+      [email], function (err, row) {
+        callback(err, row)
       })
   }
 
-  selectAll(callback) {
-    return this.db.all(`SELECT * FROM user`, function(err,rows){
-      callback(err,rows)
+  selectAll (callback) {
+    return this.db.all('SELECT * FROM user', function (err, rows) {
+      callback(err, rows)
     })
   }
 
-  insert(email, callback) {
+  insert (email, callback) {
     return this.db.run(
       'INSERT INTO user (email) VALUES (?)',
       [email], (err) => {
@@ -39,7 +39,7 @@ class Db {
       })
   }
 
-  update(userId, appData, callback) {
+  update (userId, appData, callback) {
     return this.db.run(
       'UPDATE user SET appData = ? WHERE id = ?',
       [appData, userId], (err) => {
