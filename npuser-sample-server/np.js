@@ -2,10 +2,12 @@
 const NoPasswordAuthorizer = require('../../npuser-client/dist')
 const {sendErr, sendResponse} = require('./response-handlers')
 const { Router } = require('express')
-
+const { BadRequest, InvalidRequest } = require('./application-error')
 const verbose = true
 
-const { NPUSER_CLIENT_ID, NPUSER_CLIENT_SECRET, NPUSER_URL } = process.env
+const { NPUSER_CLIENT_ID } = process.env // the api key this app uses to connect with the npuser.org service
+const { NPUSER_CLIENT_SECRET } = process.env // the shared secret this app uses to send encrypted data to npuser
+const { NPUSER_URL } = process.env // the npuser service url with? or without? trailing slash
 
 const npuserAuthorizer = new NoPasswordAuthorizer({
   baseUrl: NPUSER_URL,
@@ -24,62 +26,74 @@ class SampleNpUserAuthorizer /* implements ApiProvider */ {
     this.userValidatedResponseHandler = userValidatedResponseHandler
   }
 
-  userAuth (req, res, next) {
-    const email = req.body.email
-    if (verbose) console.log('npuser-sample-server: step 1 request with email:', email)
-    npuserAuthorizer.sendAuth(email)
-    .then((authResponse) => {
-      const token = authResponse.token
-      if (verbose) console.log('npuser-sample-server:  step 1 response:', authResponse)
-      sendResponse(res, {token: token});
-    }).catch((error) => {
-      if (verbose) console.log('npuser-sample-server:  error', error.message, error.status)
-      // return sendErr(res, error.status || 500, error.message || 'Error on the server.')
-      next(error)
-    })
+  userAuth () {
+    return (req, res, next) => {
+      const email = req.body.email
+      if (verbose) console.log('npuser-sample-server: step 1 request with email:', email)
+      npuserAuthorizer.sendAuth(email)
+      .then((authResponse) => {
+        const token = authResponse.token
+        if (verbose) console.log('npuser-sample-server:  step 1 response:', authResponse)
+        sendResponse(res, {token: token});
+      })
+    }
   }
 
-  userValidate (req, res) {
-    const {email, authToken, code} = req.body
-    if (!email || !authToken || !code) {
-      return sendErr(res, 400, 'Must provide email address, verification code and the authorization token');
-    }
-    if (verbose) console.log('npuser-sample-server: step 2 request with:', email, code, authToken)
-    npuserAuthorizer.sendValidation(email, authToken, code)
-    .then((validationResponse) => {
-      if (validationResponse.jwt) {
-        if (verbose) console.log('npuser-sample-server: User has been validated by NP User')
-        /*
-        THAT'S IT!  You have either just registered a new user or a previous user has logged back in.
-        From here on your application can manage the user account as needed.
-        For this simple sample we will return a JWT signed by this application.
-        This app can later verify its JWT and proceed if it is valid.
-        This sample application will also insert a new user record if this is the first time.
-        The JWT returned will contain the database id of the user.
-         */
-        const validationToken = validationResponse.jwt
-        return this.userValidatedResponseHandler(email, validationToken, res)
-      } else {
-        // the JWT from NPUser may have expired, the code may be wrong, or otherwise
-        if (verbose) console.log('npuser-sample-server:  step 2 response:', validationResponse)
-        return sendErr(res, validationResponse.status, validationResponse.message);
+  userValidate (userValidatedResponseHandler) {
+    return (req, res) => {
+      const {email, authToken, code} = req.body
+      if (!email || !authToken || !code) {
+        throw BadRequest('Must provide email address, verification code and the authorization token')
       }
-    }).catch((error) => { return sendErr(res, 500, 'Error on the server.', error); })
+      if (verbose) console.log('npuser-sample-server: step 2 request with:', email, code, authToken)
+      return npuserAuthorizer.sendValidation(email, authToken, code)
+      .then((validationResponse) => {
+        if (validationResponse.jwt) {
+          if (verbose) console.log('npuser-sample-server: User has been validated by NP User')
+          /*
+          THAT'S IT!  You have either just registered a new user or a previous user has logged back in.
+          From here on your application can manage the user account as needed.
+          For this simple sample we will return a JWT signed by this application.
+          This app can later verify its JWT and proceed if it is valid.
+          This sample application will also insert a new user record if this is the first time.
+          The JWT returned will contain the database id of the user.
+           */
+          if (userValidatedResponseHandler) {
+            const validationToken = validationResponse.jwt
+            return userValidatedResponseHandler(email, validationToken, res)
+          }
+        } else {
+          if (verbose) console.log('npuser-sample-server:  step 2 response:', validationResponse)
+          throw InvalidRequest(validationResponse.message)
+        }
+      })
+    }
   }
 
   route () {
     const router = Router()
     // STEP 1 -- post to /user/auth with email address will return the authorization token.
-    router.post('/auth', this.userAuth)
+    router.post('/auth', wrapAsync(this.userAuth()))
 
     // STEP 2 - post to /user/validate. Send email address, authorization token and validation code and finalize the user authorization
-    router.post('/validate', this.userValidate)
+    router.post('/validate', wrapAsync(this.userValidate(this.userValidatedResponseHandler)))
     return router
   }
 
   // addRoute (middleWare: [express.RequestHandler], app: express.Express): void {
   addRoute (middleWare, app) {
     app.use('/user', middleWare, this.route())
+  }
+}
+
+function wrapAsync (fn/*: express.RequestHandler*/) {
+  // return function (req: Request, res: Response, next: NextFunction) {
+  return function (req, res, next) {
+    // `.catch()` any errors and pass them along to the `next()`
+    fn(req, res, next).catch((err) => {
+      console.log('in wrap async catch with error', err.message)
+      return next(err)
+    })
   }
 }
 
