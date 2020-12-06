@@ -48,7 +48,7 @@ async function postIt (apiUrl: string, payload: object) {
     .post(url, payload)
     .then(response => { return response.data })
     .catch(error => {
-      console.log('postIt Rye', error)
+      console.log('postIt Rye', JSON.stringify(error, null, 2))
       throw error
     })
 }

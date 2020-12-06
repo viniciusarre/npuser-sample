@@ -2,7 +2,6 @@
   "name": "npuser-sample-server",
   "version": "1.0.0",
   "description": "",
-  "main": "src/server.ts",
   "scripts": {
     "build": "tsc",
     "start:ts": "ts-node  -r dotenv/config src/server.ts",

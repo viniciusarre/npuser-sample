@@ -1,3 +1,20 @@
+import logger from '../logger'
+import { Request, Response, NextFunction } from 'express'
+
+// error handling middleware
+export const appErrorMiddleWare = (err: Error, req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) {
+    return next(err)
+  }
+  let status = 500
+  if (err instanceof ApplicationError) { status = (err as ApplicationError).status }
+  const errData = {
+    message: err.message,
+    status: status
+  }
+  logger.info('npuser: Error handler ' + JSON.stringify(errData))
+  return res.status(status).json(errData)
+}
 
 export class ApplicationError extends Error {
   public message: string = 'ApplicationError';
