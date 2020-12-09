@@ -31,6 +31,14 @@ import LoginFormInputVCode from './LoginFormVCode.vue'
 import axios from 'axios'
 import State from '../state'
 
+const npAxios = axios.create({
+  validateStatus: function (status) {
+    console.log('Auth custom axios validating status', status)
+    // return status >= 200 && status < 300; // default
+    return status >= 200 && status < 500; // custom. Will handle 400 errors in code differently than a 500 error
+  }
+});
+
 interface AuthState {
   isPendingUserEmail: boolean;
   isPendingVerificationCode: boolean;
@@ -41,14 +49,16 @@ interface AuthState {
 
 const URL = 'http://localhost:3000/'
 
-async function postIt (apiUrl: string, payload: object) {
+const SAMPLE_SERVER_AUTH_PATH = 'user/auth'
+const SAMPLE_SERVER_VALIDATE_PATH = 'user/validate'
+
+async function postToMyServer (apiUrl: string, payload: object) {
   const url = URL + apiUrl
-  console.log('PostIt', url)
-  return axios
+  console.log(`Auth post to ${url}`)
+  return npAxios
     .post(url, payload)
     .then(response => { return response.data })
     .catch(error => {
-      console.log('postIt Rye', JSON.stringify(error, null, 2))
       throw error
     })
 }
@@ -76,18 +86,19 @@ export default {
     const authUser = async (email: string) => {
       State.setLoading(true)
       try {
-        console.log('authUser with email', email)
         state.email = email
-        // TODO restore email address
-        const authResponse = await postIt('user/auth', {email: undefined})// state.email})
-        console.log('Auth response:', authResponse)
+        const payload = {
+          email: state.email
+        }
+        const authResponse = await postToMyServer(SAMPLE_SERVER_AUTH_PATH, payload)
         state.token = authResponse.token
         if (state.token) {
           state.isPendingUserEmail = false
           state.isPendingVerificationCode = true
+        } else {
+          state.errMsg = authResponse.message
         }
       } catch (error) {
-        console.log('authUser Rye', error)
         state.errMsg = error.message
       } finally {
         State.setLoading(false)
@@ -98,13 +109,12 @@ export default {
       State.setLoading(true)
       try {
         if (vcode) {
-          console.log('user provided vcode', vcode)
           const payload = {
             email: state.email,
             authToken: state.token,
             code: vcode
           }
-          const validationResponse = await postIt('user/validate', payload)
+          const validationResponse = await postToMyServer(SAMPLE_SERVER_VALIDATE_PATH, payload)
           console.log('Validation response:', validationResponse)
           if (validationResponse.token) {
             state.isPendingVerificationCode = false

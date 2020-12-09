@@ -4,9 +4,8 @@
   "description": "",
   "scripts": {
     "build": "tsc",
-    "start:ts": "ts-node  -r dotenv/config src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node -r dotenv/config srv.js",
+    "start": "ts-node  -r dotenv/config src/server.ts",
     "local": "nodemon -r dotenv/config srv.js",
     "env:list": "grep 'process.env' -Rn *.js"
   },
@@ -18,10 +17,11 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "express-async-handler": "^1.1.4",
     "express-rate-limit": "^5.1.3",
     "helmet": "^4.2.0",
     "jsonwebtoken": "^8.5.1",
-    "npuser-client": "^1.0.16",
+    "npuser-client": "file:../../npuser-client",
     "sqlite3": "^5.0.0",
     "winston": "3.3.2"
   },

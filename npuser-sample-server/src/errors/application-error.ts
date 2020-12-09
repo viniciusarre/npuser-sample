@@ -7,12 +7,19 @@ export const appErrorMiddleWare = (err: Error, req: Request, res: Response, next
     return next(err)
   }
   let status = 500
-  if (err instanceof ApplicationError) { status = (err as ApplicationError).status }
+  if ('status' in err) {
+    // @ts-ignore
+    status = err.status
+  }
+  if (err instanceof ApplicationError) {
+    console.log('npuser-sample-server: maybe this will not be called??????')
+    status = (err as ApplicationError).status
+  }
   const errData = {
     message: err.message,
     status: status
   }
-  logger.info('npuser: Error handler ' + JSON.stringify(errData))
+  logger.info(`npuser-sample-server: Error handler ${status} ${JSON.stringify(errData)}`)
   return res.status(status).json(errData)
 }
 

@@ -4,11 +4,15 @@ import { allowCrossDomain } from './cors'
 import helmet from 'helmet'
 import bodyParser from 'body-parser'
 import compression from 'compression'
-import { SampleNpUserAuthorizer, UserAuthCallback } from './np'
+import { SampleNpUserAuthorizer } from './np'
+
+const serverPort = process.env.PORT || 3000
 
 export interface ApiProvider {
   addRoute (middleWare: express.RequestHandler[], app: Express): void
 }
+
+const BANNER = `npuser-sample-server: listening on port ${serverPort}`
 
 function createApp (middleWare: express.RequestHandler[], apiProviders: ApiProvider[]) {
   const eApp = express()
@@ -21,8 +25,8 @@ function createApp (middleWare: express.RequestHandler[], apiProviders: ApiProvi
     provider.addRoute(middleWare, eApp)
   })
   eApp.get('/', (req, res) => {
-    console.log(`npuser-sample: get / call ip: ${req.ip}`)
-    res.status(200).send({ message: 'npuser sample service is up and running' })
+    console.log(`npuser-sample-server: get / call ip: ${req.ip}`)
+    res.status(200).send({ message: BANNER })
   })
   // add error handling middleware last.
   // See https://thecodebarbarian.com/80-20-guide-to-express-error-handling
@@ -31,19 +35,13 @@ function createApp (middleWare: express.RequestHandler[], apiProviders: ApiProvi
 }
 
 const middleWare = [allowCrossDomain]
-const userCallback:UserAuthCallback = (email: string, token: string, response: Response): Promise<object> => {
-  console.log('userCallback', email, token)
-  return Promise.resolve({})
-}
 
-// // TODO  insert the valid user handler into the constructor of SampleNpUserAuthorizer
-const apiUser = new SampleNpUserAuthorizer(userCallback)
+const apiUser = new SampleNpUserAuthorizer()
 
 const apiProviders: ApiProvider[] = [apiUser]
 
 const app = createApp(middleWare, apiProviders)
 
-const serverPort = process.env.PORT || 3000
 app.listen(serverPort, async () => {
-  console.log(`NP User SAMPLE server listening on port ${serverPort}`)
+  console.log(BANNER)
 })
